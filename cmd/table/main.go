@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-index"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
-	_ "text/template"
+	"text/template"
 )
 
 type Map struct {
@@ -23,13 +23,32 @@ type Map struct {
 	Identifier string	`json:"identifier,omitempty"`
 }
 	
-	
+type TemplateVars struct {
+	Maps string
+}
+
 func main() {
 
 	repo := flag.String("repo", "/usr/local/data/sfomuseum-data-maps", "...")
-
+	path_templates := flag.String("templates", "", "...")
+	
 	flag.Parse()
 
+	t := template.New("sfomuseum_maps").Funcs(template.FuncMap{
+	})
+	
+	t, err := t.ParseGlob(*path_templates)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	t = t.Lookup("catalog_js")
+
+	if t == nil {
+		log.Fatal("Missing catalog")
+	}
+	
 	maps := make([]Map, 0)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -121,13 +140,24 @@ func main() {
 
 	done_ch <- true
 
-	enc, err := json.Marshal(maps)
+	enc_maps, err := json.Marshal(maps)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(enc))
+	str_maps := string(enc_maps)
+	
+	vars := TemplateVars{
+		Maps: str_maps,
+	}
+
+	out := os.Stdout
+	err = t.Execute(out, vars)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
