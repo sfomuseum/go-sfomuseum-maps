@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-index"
 	"io"
@@ -15,16 +16,20 @@ import (
 	"text/template"
 )
 
+type MapCatalog map[string]Map
+
 type Map struct {
+	URI string `json:"uri"`
 	Year int	`json:"year"`
 	MinZoom int	`json:"min_zoom"`
 	MaxZoom int	`json:"max_zoom"`
-	Source int	`json:"source,omitempty"`
+	Source string	`json:"source,omitempty"`
 	Identifier string	`json:"identifier,omitempty"`
 }
 	
 type TemplateVars struct {
-	Maps string
+	Catalog MapCatalog
+	LastModified string
 }
 
 func main() {
@@ -35,6 +40,17 @@ func main() {
 	flag.Parse()
 
 	t := template.New("sfomuseum_maps").Funcs(template.FuncMap{
+		"ToJSON": func(raw interface{}) string {
+
+			enc, err := json.Marshal(raw)
+
+			if err != nil {
+				log.Println(err)
+				return ""
+			}
+
+			return string(enc)
+		},
 	})
 	
 	t, err := t.ParseGlob(*path_templates)
@@ -49,7 +65,7 @@ func main() {
 		log.Fatal("Missing catalog")
 	}
 	
-	maps := make([]Map, 0)
+	map_catalog := make(map[string]Map)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -77,12 +93,32 @@ func main() {
 			return errors.New("Missing mz:max_zoom")
 		}
 
-		bbox_rsp := gjson.GetBytes(body, "bbox")
+		src_rsp := gjson.GetBytes(body, "properties.src:geom")
 
-		if !bbox_rsp.Exists() {
-			return errors.New("Missing bbox")
+		if !src_rsp.Exists() {
+			return errors.New("Missing src:geom")
 		}
 
+		src := src_rsp.String()
+
+		path_id := fmt.Sprintf("properties.%s:id", src)
+
+		id_rsp := gjson.GetBytes(body, path_id)
+		src_id := ""
+			
+		if id_rsp.Exists() {
+			src_id = id_rsp.String()
+		}
+
+		
+		uri_rsp := gjson.GetBytes(body, "properties.sfomuseum:uri")
+
+		if !uri_rsp.Exists() {
+			return errors.New("Missing sfomuseum:uri")
+		}
+
+		uri := uri_rsp.String()
+		
 		incept_rsp := gjson.GetBytes(body, "properties.date:inception_upper")
 
 		if !incept_rsp.Exists() {
@@ -102,9 +138,12 @@ func main() {
 		max_zoom := int(max_rsp.Int())
 
 		m := Map{
+			URI: uri,
 			Year: year,
 			MinZoom: min_zoom,
 			MaxZoom: max_zoom,
+			Source: src,
+			Identifier: src_id,			
 		}
 
 		map_ch <- m
@@ -120,7 +159,14 @@ func main() {
 			case <- done_ch:
 				return
 			case m := <- map_ch:
-				maps = append(maps, m)
+
+				_, exists := map_catalog[m.URI]
+
+				if exists {
+					log.Fatalf("Duplicate URI")
+				}
+				
+				map_catalog[m.URI] = m
 			}
 		}
 
@@ -140,16 +186,11 @@ func main() {
 
 	done_ch <- true
 
-	enc_maps, err := json.Marshal(maps)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	str_maps := string(enc_maps)
+	now := time.Now()
 	
 	vars := TemplateVars{
-		Maps: str_maps,
+		Catalog: map_catalog,
+		LastModified: now.Format(time.RFC3339),
 	}
 
 	out := os.Stdout
