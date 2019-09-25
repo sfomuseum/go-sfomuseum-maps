@@ -14,6 +14,22 @@ sfomuseum.maps.catalog = (function(){
 	'data': function(){
 	    return _catalog;
 	},
+
+	// this is a helper function to account for pre-this-package
+	// code (20190924/thisisaaronland)
+
+	'asYears': function(){
+
+            var _catalog = self.data();
+            var _years = {};
+
+            for (var uri in _catalog){
+		var details = _catalog[uri];
+		_years[uri] = [ details['min_zoom'], details['max_zoom'], details['source'], details['identifier']];
+            }
+
+            return _years;
+	},
     };
 
     return self;
