@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-index"
+	_ "github.com/whosonfirst/go-whosonfirst-index/fs"	
 	"io"
 	"io/ioutil"
 	"log"
@@ -73,7 +74,7 @@ func main() {
 	map_ch := make(chan Map)
 	done_ch := make(chan bool)
 	
-	cb := func(fh io.Reader, ctx context.Context, args ...interface{}) error {
+	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) error {
 
 		body, err := ioutil.ReadAll(fh)
 

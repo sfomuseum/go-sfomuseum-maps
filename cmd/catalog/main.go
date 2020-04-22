@@ -7,6 +7,7 @@ import (
 	"flag"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-index"
+	_ "github.com/whosonfirst/go-whosonfirst-index/fs"	
 	"io"
 	"io/ioutil"
 	"log"
@@ -28,7 +29,7 @@ func main() {
 
 	mu := new(sync.RWMutex)
 	
-	cb := func(fh io.Reader, ctx context.Context, args ...interface{}) error {
+	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) error {
 
 		body, err := ioutil.ReadAll(fh)
 
