@@ -20,15 +20,17 @@ sfomuseum.maps.catalog = (function(){
 
 	'asYears': function(){
 
-            var _catalog = self.data();
-            var _years = {};
+            var catalog = self.data();
+	    var count = catalog.length;
 
-            for (var uri in _catalog){
-		var details = _catalog[uri];
-		_years[uri] = [ details['min_zoom'], details['max_zoom'], details['source'], details['identifier']];
+            var years = {};
+
+	    for (var i=0; i < count; i++){
+		var details = catalog[i];
+		years[uri] = [ details['min_zoom'], details['max_zoom'], details['source'], details['identifier']];
             }
 
-            return _years;
+            return years;
 	},
     };
 

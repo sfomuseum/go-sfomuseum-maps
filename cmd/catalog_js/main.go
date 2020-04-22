@@ -1,6 +1,11 @@
 package main
 
 import (
+	_ "github.com/whosonfirst/go-whosonfirst-index/fs"
+	_ "github.com/whosonfirst/go-whosonfirst-index-git"	
+)
+
+import (
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,24 +13,27 @@ import (
 	"fmt"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-index"
-	_ "github.com/whosonfirst/go-whosonfirst-index/fs"	
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 	"time"
+	"path/filepath"
 	"text/template"
 )
 
-type MapCatalog map[string]Map
+type MapDict map[string]Map
+type MapCatalog []Map
 
 type Map struct {
-	URI string `json:"uri"`
+	Label string `json:"label"`
 	Year int	`json:"year"`
 	MinZoom int	`json:"min_zoom"`
 	MaxZoom int	`json:"max_zoom"`
 	Source string	`json:"source,omitempty"`
 	Identifier string	`json:"identifier,omitempty"`
+	URL string `json:"url"`
 }
 	
 type TemplateVars struct {
@@ -34,8 +42,13 @@ type TemplateVars struct {
 }
 
 func main() {
+	
+	// mode := flag.String("mode", "repo://", "...")
+	// uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
 
-	repo := flag.String("repo", "/usr/local/data/sfomuseum-data-maps", "...")
+	mode := flag.String("mode", "git://", "...")
+	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
+	
 	path_templates := flag.String("templates", "", "...")
 	
 	flag.Parse()
@@ -66,7 +79,7 @@ func main() {
 		log.Fatal("Missing catalog")
 	}
 	
-	map_catalog := make(map[string]Map)
+	map_dict := make(map[string]Map)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -76,6 +89,16 @@ func main() {
 	
 	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) error {
 
+		path, err := index.PathForContext(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		if filepath.Ext(path) != ".geojson" {
+			return nil
+		}
+			
 		body, err := ioutil.ReadAll(fh)
 
 		if err != nil {
@@ -110,7 +133,6 @@ func main() {
 		if id_rsp.Exists() {
 			src_id = id_rsp.String()
 		}
-
 		
 		uri_rsp := gjson.GetBytes(body, "properties.sfomuseum:uri")
 
@@ -118,7 +140,7 @@ func main() {
 			return errors.New("Missing sfomuseum:uri")
 		}
 
-		uri := uri_rsp.String()
+		label := uri_rsp.String()
 		
 		incept_rsp := gjson.GetBytes(body, "properties.date:inception_upper")
 
@@ -134,17 +156,20 @@ func main() {
 		}
 
 		year := incept_t.Year()
-
+		
 		min_zoom := int(min_rsp.Int())
 		max_zoom := int(max_rsp.Int())
 
+		url := fmt.Sprintf("https://millsfield.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
+
 		m := Map{
-			URI: uri,
+			Label: label,
 			Year: year,
 			MinZoom: min_zoom,
 			MaxZoom: max_zoom,
 			Source: src,
-			Identifier: src_id,			
+			Identifier: src_id,
+			URL: url,
 		}
 
 		map_ch <- m
@@ -161,25 +186,25 @@ func main() {
 				return
 			case m := <- map_ch:
 
-				_, exists := map_catalog[m.URI]
+				_, exists := map_dict[m.Label]
 
 				if exists {
-					log.Fatalf("Duplicate URI")
+					log.Fatalf("Duplicate Label")
 				}
 				
-				map_catalog[m.URI] = m
+				map_dict[m.Label] = m
 			}
 		}
 
 	}()
 	
-	idx, err := index.NewIndexer("repo", cb)
+	idx, err := index.NewIndexer(*mode, cb)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = idx.IndexPath(*repo)
+	err = idx.IndexPath(*uri)
 
 	if err != nil {
 		log.Fatal(err)
@@ -187,6 +212,20 @@ func main() {
 
 	done_ch <- true
 
+	labels := make([]string, 0)
+	
+	for label, _ := range map_dict {
+		labels = append(labels, label)
+	}
+
+	sort.Strings(labels)
+
+	map_catalog := make([]Map, 0)
+
+	for _, label := range labels {
+		map_catalog = append(map_catalog, map_dict[label])
+	}
+	
 	now := time.Now()
 	
 	vars := TemplateVars{
@@ -202,5 +241,3 @@ func main() {
 	}
 
 }
-
-
