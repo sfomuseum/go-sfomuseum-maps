@@ -27,7 +27,8 @@ sfomuseum.maps.catalog = (function(){
 
 	    for (var i=0; i < count; i++){
 		var details = catalog[i];
-		years[uri] = [ details['min_zoom'], details['max_zoom'], details['source'], details['identifier']];
+		var label = details['label'];
+		years[label] = [ details['min_zoom'], details['max_zoom'], details['source'], details['identifier']];
             }
 
             return years;
