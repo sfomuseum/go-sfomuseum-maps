@@ -160,7 +160,7 @@ func main() {
 		min_zoom := int(min_rsp.Int())
 		max_zoom := int(max_rsp.Int())
 
-		url := fmt.Sprintf("https://millsfield.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
+		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
 		m := Map{
 			Label: label,
