@@ -1,8 +1,7 @@
 package main
 
 import (
-	_ "github.com/whosonfirst/go-whosonfirst-index/fs"
-	_ "github.com/whosonfirst/go-whosonfirst-index-git"	
+	_ "github.com/whosonfirst/go-whosonfirst-iterate-git"	
 )
 
 import (
@@ -12,7 +11,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-index"
+	"github.com/whosonfirst/go-whosonfirst-iterate/emitter"	
+	"github.com/whosonfirst/go-whosonfirst-iterate/iterator"
+	"github.com/sfomuseum/go-sfomuseum-data-maps/templates/javascript"	
 	"io"
 	"io/ioutil"
 	"log"
@@ -49,8 +50,6 @@ func main() {
 	mode := flag.String("mode", "git://", "...")
 	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
 	
-	path_templates := flag.String("templates", "", "...")
-	
 	flag.Parse()
 
 	t := template.New("sfomuseum_maps").Funcs(template.FuncMap{
@@ -67,7 +66,7 @@ func main() {
 		},
 	})
 	
-	t, err := t.ParseGlob(*path_templates)
+	t, err := t.ParseFS(javascript.FS, "*.js")
 
 	if err != nil {
 		log.Fatal(err)
@@ -87,9 +86,9 @@ func main() {
 	map_ch := make(chan Map)
 	done_ch := make(chan bool)
 	
-	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) error {
+	cb := func(ctx context.Context, fh io.ReadSeeker, args ...interface{}) error {
 
-		path, err := index.PathForContext(ctx)
+		path, err := emitter.PathForContext(ctx)
 
 		if err != nil {
 			return err
@@ -198,13 +197,13 @@ func main() {
 
 	}()
 	
-	idx, err := index.NewIndexer(*mode, cb)
+	iter, err := iterator.NewIterator(ctx, *mode, cb)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = idx.IndexPath(*uri)
+	err = iter.IterateURIs(ctx, *uri)
 
 	if err != nil {
 		log.Fatal(err)
