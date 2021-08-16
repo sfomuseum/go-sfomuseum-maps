@@ -1,6 +1,6 @@
 package javascript
 
-import(
+import (
 	"embed"
 )
 
