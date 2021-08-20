@@ -11,6 +11,7 @@ import (
 )
 
 const CSR_PREFIX string = "#CSR: "
+const FIELDNAMES string = "mapX,mapY,pixelX,pixelY,enable,dX,dY,residual"
 
 type GroundControlPoints struct {
 	CSR    string                `json:"csr"`
@@ -139,5 +140,35 @@ func UnmarshalGroundControlPoints(ctx context.Context, r io.ReadSeeker) (*Ground
 }
 
 func (gcp *GroundControlPoints) Marshal(ctx context.Context, wr io.Writer) error {
-	return fmt.Errorf("Not implemented")
+
+	if gcp.CSR != "" {
+		csr_ln := fmt.Sprintf("%s%s\n", CSR_PREFIX, gcp.CSR)
+		wr.Write([]byte(csr_ln))
+	}
+
+	csv_wr, err := csvdict.NewWriter(wr, strings.Split(FIELDNAMES, ","))
+
+	if err != nil {
+		return err
+	}
+
+	csv_wr.WriteHeader()
+
+	for _, pt := range gcp.Points {
+
+		row := map[string]string{
+			"mapX":     strconv.FormatFloat(pt.MapX, 'f', -1, 64),
+			"mapY":     strconv.FormatFloat(pt.MapY, 'f', -1, 64),
+			"pixelX":   strconv.FormatFloat(pt.PixelX, 'f', -1, 64),
+			"pixelY":   strconv.FormatFloat(pt.PixelY, 'f', -1, 64),
+			"enable":   strconv.FormatFloat(pt.Enable, 'f', 1, 64),
+			"dX":       strconv.FormatFloat(pt.DX, 'f', -1, 64),
+			"dY":       strconv.FormatFloat(pt.DY, 'f', -1, 64),
+			"residual": strconv.FormatFloat(pt.Residual, 'f', -1, 64),
+		}
+
+		csv_wr.WriteRow(row)
+	}
+
+	return nil
 }
