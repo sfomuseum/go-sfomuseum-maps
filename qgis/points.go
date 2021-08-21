@@ -143,7 +143,7 @@ func UnmarshalGroundControlPoints(ctx context.Context, r io.ReadSeeker) (*Ground
 	return gcp, nil
 }
 
-func (gcp *GroundControlPoints) Marshal(ctx context.Context, wr io.Writer) error {
+func Marshal(ctx context.Context, gcp *GroundControlPoints, wr io.Writer) error {
 
 	if gcp.CRS != "" {
 		crs_ln := fmt.Sprintf("%s%s\n", CRS_PREFIX, gcp.CRS)

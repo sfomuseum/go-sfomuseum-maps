@@ -1,7 +1,10 @@
 package qgis
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"io"
 	"os"
 	"testing"
 )
@@ -30,4 +33,45 @@ func TestUnmarshalGroundControlPoints(t *testing.T) {
 	if gcp.CRS != expected_csr {
 		t.Fatalf("Unexpected CRS '%s'", gcp.CRS)
 	}
+}
+
+func TestMarshalGroundControlPoints(t *testing.T) {
+
+	ctx := context.Background()
+
+	path := "../fixtures/1930.points"
+	fh, err := os.Open(path)
+
+	if err != nil {
+		t.Fatalf("Failed to open '%s', %v", path, err)
+	}
+
+	defer fh.Close()
+
+	body, err := io.ReadAll(fh)
+
+	if err != nil {
+		t.Fatalf("Failed to read '%s', %v", path, err)
+	}
+
+	br := bytes.NewReader(body)
+	gcp, err := UnmarshalGroundControlPoints(ctx, br)
+
+	var buf bytes.Buffer
+	wr := bufio.NewWriter(&buf)
+
+	err = Marshal(ctx, gcp, wr)
+
+	if err != nil {
+		t.Fatalf("Failed to marshal GCP, %v", err)
+	}
+
+	wr.Flush()
+
+	new_body := buf.Bytes()
+
+	if bytes.Compare(body, new_body) != 0 {
+		t.Fatalf("Marshal doesn't match: '%s'\n'%s'", string(body), string(new_body))
+	}
+
 }
