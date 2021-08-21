@@ -10,11 +10,11 @@ import (
 	"strings"
 )
 
-const CSR_PREFIX string = "#CSR: "
+const CRS_PREFIX string = "#CRS: "
 const FIELDNAMES string = "mapX,mapY,pixelX,pixelY,enable,dX,dY,residual"
 
 type GroundControlPoints struct {
-	CSR    string                `json:"csr"`
+	CRS    string                `json:"crs"`
 	Points []*GroundControlPoint `json:"points"`
 }
 
@@ -31,25 +31,29 @@ type GroundControlPoint struct {
 
 func UnmarshalGroundControlPoints(ctx context.Context, r io.ReadSeeker) (*GroundControlPoints, error) {
 
-	csr := ""
+	crs := ""
 	points := make([]*GroundControlPoint, 0)
 
-	b := bufio.NewReader(r)
-	first_ln, err := b.ReadString('\n')
+	buf := bufio.NewReader(r)
+
+	first_ln, err := buf.ReadString('\n')
 
 	if err != nil {
 		return nil, err
 	}
 
-	if strings.HasPrefix(first_ln, CSR_PREFIX) {
-		csr = strings.Replace(first_ln, CSR_PREFIX, " ", 1)
-	} else {
+	offset := int64(0)
 
-		_, err = r.Seek(0, 0)
+	if strings.HasPrefix(first_ln, CRS_PREFIX) {
+		crs = strings.Replace(first_ln, CRS_PREFIX, " ", 1)
+		crs = strings.TrimSpace(crs)
+		offset = int64(len([]byte(first_ln)))
+	}
 
-		if err != nil {
-			return nil, err
-		}
+	_, err = r.Seek(int64(offset), 0)
+
+	if err != nil {
+		return nil, err
 	}
 
 	csv_r, err := csvdict.NewReader(r)
@@ -132,7 +136,7 @@ func UnmarshalGroundControlPoints(ctx context.Context, r io.ReadSeeker) (*Ground
 	}
 
 	gcp := &GroundControlPoints{
-		CSR:    csr,
+		CRS:    crs,
 		Points: points,
 	}
 
@@ -141,9 +145,9 @@ func UnmarshalGroundControlPoints(ctx context.Context, r io.ReadSeeker) (*Ground
 
 func (gcp *GroundControlPoints) Marshal(ctx context.Context, wr io.Writer) error {
 
-	if gcp.CSR != "" {
-		csr_ln := fmt.Sprintf("%s%s\n", CSR_PREFIX, gcp.CSR)
-		wr.Write([]byte(csr_ln))
+	if gcp.CRS != "" {
+		crs_ln := fmt.Sprintf("%s%s\n", CRS_PREFIX, gcp.CRS)
+		wr.Write([]byte(crs_ln))
 	}
 
 	csv_wr, err := csvdict.NewWriter(wr, strings.Split(FIELDNAMES, ","))
