@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/whosonfirst/go-whosonfirst-iterate-git"
+	_ "github.com/whosonfirst/go-whosonfirst-iterate-git/v2"
 )
 
 import (
@@ -13,8 +13,7 @@ import (
 	"github.com/sfomuseum/go-flags/multi"
 	"github.com/sfomuseum/go-sfomuseum-data-maps/templates/javascript"
 	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-iterate/emitter"
-	"github.com/whosonfirst/go-whosonfirst-iterate/iterator"
+	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 	"io"
 	"io/ioutil"
 	"log"
@@ -94,13 +93,7 @@ func main() {
 	map_ch := make(chan Map)
 	done_ch := make(chan bool)
 
-	cb := func(ctx context.Context, fh io.ReadSeeker, args ...interface{}) error {
-
-		path, err := emitter.PathForContext(ctx)
-
-		if err != nil {
-			return err
-		}
+	cb := func(ctx context.Context, path string, fh io.ReadSeeker, args ...interface{}) error {
 
 		if filepath.Ext(path) != ".geojson" {
 			return nil
