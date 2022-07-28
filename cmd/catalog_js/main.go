@@ -7,7 +7,6 @@ import (
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/sfomuseum/go-flags/multi"
@@ -15,7 +14,6 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -99,7 +97,7 @@ func main() {
 			return nil
 		}
 
-		body, err := ioutil.ReadAll(fh)
+		body, err := io.ReadAll(fh)
 
 		if err != nil {
 			return err
@@ -108,19 +106,19 @@ func main() {
 		min_rsp := gjson.GetBytes(body, "properties.mz:min_zoom")
 
 		if !min_rsp.Exists() {
-			return errors.New("Missing mz:min_zoom")
+			return fmt.Errorf("%s is missing mz:min_zoom", path)
 		}
 
 		max_rsp := gjson.GetBytes(body, "properties.mz:max_zoom")
 
 		if !max_rsp.Exists() {
-			return errors.New("Missing mz:max_zoom")
+			return fmt.Errorf("%s is missing mz:max_zoom", path)
 		}
 
 		src_rsp := gjson.GetBytes(body, "properties.src:geom")
 
 		if !src_rsp.Exists() {
-			return errors.New("Missing src:geom")
+			return fmt.Errorf("%s is missing src:geom", path)
 		}
 
 		src := src_rsp.String()
@@ -137,7 +135,7 @@ func main() {
 		uri_rsp := gjson.GetBytes(body, "properties.sfomuseum:uri")
 
 		if !uri_rsp.Exists() {
-			return errors.New("Missing sfomuseum:uri")
+			return fmt.Errorf("Missing sfomuseum:uri")
 		}
 
 		label := uri_rsp.String()
@@ -154,7 +152,7 @@ func main() {
 		incept_rsp := gjson.GetBytes(body, "properties.date:inception_upper")
 
 		if !incept_rsp.Exists() {
-			return errors.New("Missing date:inception_upper")
+			return fmt.Errorf("%s is missing date:inception_upper", path)
 		}
 
 		incept_str := incept_rsp.String()
@@ -210,13 +208,13 @@ func main() {
 	iter, err := iterator.NewIterator(ctx, *mode, cb)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create new iterator, %v", err)
 	}
 
 	err = iter.IterateURIs(ctx, *uri)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to iterate '%s', %v", *uri, err)
 	}
 
 	done_ch <- true
@@ -247,7 +245,7 @@ func main() {
 	err = t.Execute(out, vars)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to execute template, %v", err)
 	}
 
 }
