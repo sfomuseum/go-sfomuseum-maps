@@ -42,9 +42,8 @@ type TemplateVars struct {
 	Catalog      MapCatalog
 	LastModified string
 	// as in the command-line args so we can understand how the file was create
-	// this was largely to account for the desire to exclude 1937 from the T2 installation	
-	Args         string 
-	
+	// this was largely to account for the desire to exclude 1937 from the T2 installation
+	Args string
 }
 
 func main() {

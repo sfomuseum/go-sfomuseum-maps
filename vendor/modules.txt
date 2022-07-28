@@ -18,12 +18,30 @@ github.com/ProtonMail/go-crypto/openpgp/internal/ecc
 github.com/ProtonMail/go-crypto/openpgp/internal/encoding
 github.com/ProtonMail/go-crypto/openpgp/packet
 github.com/ProtonMail/go-crypto/openpgp/s2k
+# github.com/aaronland/go-artisanal-integers v0.1.1
+github.com/aaronland/go-artisanal-integers
+# github.com/aaronland/go-artisanal-integers-proxy v0.2.5
+github.com/aaronland/go-artisanal-integers-proxy/service
+# github.com/aaronland/go-brooklynintegers-api v1.2.4
+github.com/aaronland/go-brooklynintegers-api
 # github.com/aaronland/go-json-query v0.1.2
 github.com/aaronland/go-json-query
+# github.com/aaronland/go-pool v1.0.0
+github.com/aaronland/go-pool
 # github.com/aaronland/go-roster v1.0.0
 github.com/aaronland/go-roster
+# github.com/aaronland/go-string v0.1.2
+github.com/aaronland/go-string/random
+# github.com/aaronland/go-uid v0.0.3
+github.com/aaronland/go-uid
+# github.com/aaronland/go-uid-artisanal v0.0.1
+github.com/aaronland/go-uid-artisanal
 # github.com/acomagu/bufpipe v1.0.3
 github.com/acomagu/bufpipe
+# github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129
+github.com/andres-erbsen/clock
+# github.com/cenkalti/backoff/v4 v4.1.2
+github.com/cenkalti/backoff/v4
 # github.com/emirpasic/gods v1.12.0
 github.com/emirpasic/gods/containers
 github.com/emirpasic/gods/lists
@@ -31,6 +49,8 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/trees
 github.com/emirpasic/gods/trees/binaryheap
 github.com/emirpasic/gods/utils
+# github.com/g8rswimmer/error-chain v1.0.0
+github.com/g8rswimmer/error-chain
 # github.com/go-git/gcfg v1.5.0
 github.com/go-git/gcfg
 github.com/go-git/gcfg/scanner
@@ -94,11 +114,35 @@ github.com/jbenet/go-context/io
 github.com/kevinburke/ssh_config
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
-# github.com/sergi/go-diff v1.1.0
+# github.com/natefinch/atomic v1.0.1
+github.com/natefinch/atomic
+# github.com/paulmach/orb v0.7.0
+## explicit
+github.com/paulmach/orb
+github.com/paulmach/orb/geojson
+github.com/paulmach/orb/internal/length
+github.com/paulmach/orb/planar
+# github.com/sergi/go-diff v1.2.0
 github.com/sergi/go-diff/diffmatchpatch
+# github.com/sfomuseum/go-edtf v1.0.0
+github.com/sfomuseum/go-edtf
+github.com/sfomuseum/go-edtf/calendar
+github.com/sfomuseum/go-edtf/common
+github.com/sfomuseum/go-edtf/level0
+github.com/sfomuseum/go-edtf/level1
+github.com/sfomuseum/go-edtf/level2
+github.com/sfomuseum/go-edtf/parser
+github.com/sfomuseum/go-edtf/re
+github.com/sfomuseum/go-edtf/tests
 # github.com/sfomuseum/go-flags v0.8.2
 ## explicit
 github.com/sfomuseum/go-flags/multi
+# github.com/sfomuseum/go-sfomuseum-export/v2 v2.3.7
+github.com/sfomuseum/go-sfomuseum-export/v2
+github.com/sfomuseum/go-sfomuseum-export/v2/properties
+# github.com/sfomuseum/go-sfomuseum-writer/v2 v2.0.3
+## explicit
+github.com/sfomuseum/go-sfomuseum-writer/v2
 # github.com/tidwall/gjson v1.14.1
 ## explicit
 github.com/tidwall/gjson
@@ -106,10 +150,30 @@ github.com/tidwall/gjson
 github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 github.com/tidwall/pretty
+# github.com/tidwall/sjson v1.2.4
+github.com/tidwall/sjson
 # github.com/whosonfirst/go-ioutil v1.0.2
 github.com/whosonfirst/go-ioutil
+# github.com/whosonfirst/go-reader v1.0.1
+## explicit
+github.com/whosonfirst/go-reader
 # github.com/whosonfirst/go-whosonfirst-crawl v0.2.1
 github.com/whosonfirst/go-whosonfirst-crawl
+# github.com/whosonfirst/go-whosonfirst-export/v2 v2.4.5
+## explicit
+github.com/whosonfirst/go-whosonfirst-export/v2
+github.com/whosonfirst/go-whosonfirst-export/v2/properties
+# github.com/whosonfirst/go-whosonfirst-feature v0.0.23
+## explicit
+github.com/whosonfirst/go-whosonfirst-feature/geometry
+github.com/whosonfirst/go-whosonfirst-feature/properties
+# github.com/whosonfirst/go-whosonfirst-flags v0.4.3
+github.com/whosonfirst/go-whosonfirst-flags
+github.com/whosonfirst/go-whosonfirst-flags/existential
+# github.com/whosonfirst/go-whosonfirst-format v0.3.7
+github.com/whosonfirst/go-whosonfirst-format
+# github.com/whosonfirst/go-whosonfirst-id v0.0.4
+github.com/whosonfirst/go-whosonfirst-id
 # github.com/whosonfirst/go-whosonfirst-iterate-git/v2 v2.1.1
 ## explicit
 github.com/whosonfirst/go-whosonfirst-iterate-git/v2
@@ -118,10 +182,27 @@ github.com/whosonfirst/go-whosonfirst-iterate-git/v2
 github.com/whosonfirst/go-whosonfirst-iterate/v2/emitter
 github.com/whosonfirst/go-whosonfirst-iterate/v2/filters
 github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator
+# github.com/whosonfirst/go-whosonfirst-log v0.1.0
+github.com/whosonfirst/go-whosonfirst-log
+# github.com/whosonfirst/go-whosonfirst-reader v1.0.1
+## explicit
+github.com/whosonfirst/go-whosonfirst-reader
+# github.com/whosonfirst/go-whosonfirst-sources v0.1.0
+github.com/whosonfirst/go-whosonfirst-sources
+github.com/whosonfirst/go-whosonfirst-sources/sources
+# github.com/whosonfirst/go-whosonfirst-uri v1.2.0
+github.com/whosonfirst/go-whosonfirst-uri
+# github.com/whosonfirst/go-whosonfirst-writer/v2 v2.0.2
+github.com/whosonfirst/go-whosonfirst-writer/v2
+# github.com/whosonfirst/go-writer v1.0.1
+## explicit
+github.com/whosonfirst/go-writer
 # github.com/whosonfirst/walk v0.0.1
 github.com/whosonfirst/walk
 # github.com/xanzy/ssh-agent v0.3.0
 github.com/xanzy/ssh-agent
+# go.uber.org/ratelimit v0.2.0
+go.uber.org/ratelimit
 # golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
