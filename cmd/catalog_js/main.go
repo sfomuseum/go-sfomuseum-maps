@@ -11,7 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/sfomuseum/go-flags/multi"
-	"github.com/sfomuseum/go-sfomuseum-data-maps/templates/javascript"
+	"github.com/sfomuseum/go-sfomuseum-maps/templates/javascript"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 	"io"
