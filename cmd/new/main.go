@@ -7,16 +7,17 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
+	"log"
+
 	"github.com/paulmach/orb/geojson"
 	"github.com/sfomuseum/go-flags/multi"
-	sfom_writer "github.com/sfomuseum/go-sfomuseum-writer/v2"
+	sfom_writer "github.com/sfomuseum/go-sfomuseum-writer/v3"
 	"github.com/whosonfirst/go-reader"
 	"github.com/whosonfirst/go-whosonfirst-export/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	wof_reader "github.com/whosonfirst/go-whosonfirst-reader"
-	"github.com/whosonfirst/go-writer"
-	"log"
+	"github.com/whosonfirst/go-writer/v3"
 )
 
 //go:embed stub.geojson

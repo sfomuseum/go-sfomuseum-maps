@@ -9,10 +9,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/sfomuseum/go-flags/multi"
-	"github.com/sfomuseum/go-sfomuseum-maps/templates/javascript"
-	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 	"io"
 	"log"
 	"os"
@@ -21,6 +17,11 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/sfomuseum/go-flags/multi"
+	"github.com/sfomuseum/go-sfomuseum-maps/templates/javascript"
+	"github.com/tidwall/gjson"
+	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 )
 
 type MapDict map[string]Map
