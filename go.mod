@@ -6,7 +6,7 @@ require (
 	github.com/paulmach/orb v0.10.0
 	github.com/sfomuseum/go-flags v0.10.0
 	github.com/sfomuseum/go-sfomuseum-writer/v3 v3.0.1
-	github.com/tidwall/gjson v1.16.0
+	github.com/tidwall/gjson v1.17.0
 	github.com/whosonfirst/go-reader v1.0.2
 	github.com/whosonfirst/go-whosonfirst-export/v2 v2.7.1
 	github.com/whosonfirst/go-whosonfirst-feature v0.0.26
