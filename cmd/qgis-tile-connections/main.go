@@ -47,11 +47,11 @@ type TemplateVars struct {
 
 func main() {
 
-	mode := flag.String("mode", "repo://", "...")
-	uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
+	// mode := flag.String("mode", "repo://", "...")
+	// uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
 
-	// mode := flag.String("mode", "git://", "...")
-	// uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
+	mode := flag.String("mode", "git://", "...")
+	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
 
 	var exclude multi.MultiString
 	flag.Var(&exclude, "exclude", "Zero or more maps to exclude (based on their sfomuseum:uri value)")

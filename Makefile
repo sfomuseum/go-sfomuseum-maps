@@ -1,5 +1,10 @@
 GOMOD=$(shell test -f "go.work" && echo "readonly" || echo "vendor")
 
+refresh:
+	@make cli
+	@make catalog.js
+	@make tile_connections
+
 cli:
 	go build -mod $(GOMOD) -ldflags="-s -w" -o bin/catalog_js cmd/catalog_js/main.go
 	go build -mod $(GOMOD) -ldflags="-s -w" -o bin/qgis-tile-connections cmd/qgis-tile-connections/main.go
