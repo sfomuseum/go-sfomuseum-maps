@@ -6,7 +6,6 @@ import (
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -14,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -24,23 +24,22 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 )
 
-type YXZTilesConnections []YXZTiles
-	
-type YXZTiles struct {
-	Username string `xml:"username,attr"`
-	Password string `xml:"pasword,attr"`
-	ZMin int `xml:"zmin,attr"`	
-	ZMax int `xml:"zmax,attr"`
-	TilePixelRatio int `xml:"tilePixelRatio,attr"`
-	URL string `xml:"url,attr"`
-	name string `xml:"name,attr"`
-	AuthConfig string `xml:"authcfg"`
-	Referer string `xml:"http-header:referer"`
+type XYZTiles struct {
+	Username       string
+	Password       string
+	ZMin           int
+	ZMax           int
+	TilePixelRatio int
+	URL            string
+	Name           string
+	AuthConfig     string
+	Referer        string
+	label          string
 }
 
 type TemplateVars struct {
-	Catalog      YXZTilesConnections
-	LastModified string
+	TileConnections []*XYZTiles
+	LastModified    string
 	// as in the command-line args so we can understand how the file was create
 	// this was largely to account for the desire to exclude 1937 from the T2 installation
 	Args string
@@ -48,19 +47,21 @@ type TemplateVars struct {
 
 func main() {
 
-	// mode := flag.String("mode", "repo://", "...")
-	// uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
+	mode := flag.String("mode", "repo://", "...")
+	uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
 
-	mode := flag.String("mode", "git://", "...")
-	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
+	// mode := flag.String("mode", "git://", "...")
+	// uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
 
 	var exclude multi.MultiString
 	flag.Var(&exclude, "exclude", "Zero or more maps to exclude (based on their sfomuseum:uri value)")
 
 	flag.Parse()
 
-	t := template.New("sfomuseum_maps").Funcs(template.FuncMap{
-	})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	t := template.New("sfomuseum_maps") // .Funcs(template.FuncMap{})
 
 	t, err := t.ParseFS(xml.FS, "*.xml")
 
@@ -68,27 +69,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	t = t.Lookup("catalog_xml")
+	t = t.Lookup("qgis_tile_connections")
 
 	if t == nil {
-		log.Fatal("Missing catalog")
+		log.Fatal("Missing template")
 	}
 
-	map_dict := make(map[string]Map)
+	tile_dict := make(map[string]*XYZTiles)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	map_ch := make(chan Map)
+	tile_ch := make(chan *XYZTiles)
 	done_ch := make(chan bool)
 
-	cb := func(ctx context.Context, path string, fh io.ReadSeeker, args ...interface{}) error {
+	cb := func(ctx context.Context, path string, r io.ReadSeeker, args ...interface{}) error {
 
 		if filepath.Ext(path) != ".geojson" {
 			return nil
 		}
 
-		body, err := io.ReadAll(fh)
+		body, err := io.ReadAll(r)
 
 		if err != nil {
 			return err
@@ -104,23 +102,6 @@ func main() {
 
 		if !max_rsp.Exists() {
 			return fmt.Errorf("%s is missing mz:max_zoom", path)
-		}
-
-		src_rsp := gjson.GetBytes(body, "properties.src:geom")
-
-		if !src_rsp.Exists() {
-			return fmt.Errorf("%s is missing src:geom", path)
-		}
-
-		src := src_rsp.String()
-
-		path_id := fmt.Sprintf("properties.%s:id", src)
-
-		id_rsp := gjson.GetBytes(body, path_id)
-		src_id := ""
-
-		if id_rsp.Exists() {
-			src_id = id_rsp.String()
 		}
 
 		uri_rsp := gjson.GetBytes(body, "properties.sfomuseum:uri")
@@ -160,17 +141,16 @@ func main() {
 
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
-		m := Map{
-			Label:      label,
-			Year:       year,
-			MinZoom:    min_zoom,
-			MaxZoom:    max_zoom,
-			Source:     src,
-			Identifier: src_id,
-			URL:        url,
+		t := &XYZTiles{
+			Name:           label,
+			label:          strconv.Itoa(year),
+			ZMin:           min_zoom,
+			ZMax:           max_zoom,
+			URL:            url,
+			TilePixelRatio: 1,
 		}
 
-		map_ch <- m
+		tile_ch <- t
 		return nil
 	}
 
@@ -182,15 +162,15 @@ func main() {
 				return
 			case <-done_ch:
 				return
-			case m := <-map_ch:
+			case t := <-tile_ch:
 
-				_, exists := map_dict[m.Label]
+				_, exists := tile_dict[t.label]
 
 				if exists {
-					log.Fatalf("Duplicate Label")
+					log.Fatalf("Duplicate label")
 				}
 
-				map_dict[m.Label] = m
+				tile_dict[t.label] = t
 			}
 		}
 
@@ -212,24 +192,24 @@ func main() {
 
 	labels := make([]string, 0)
 
-	for label, _ := range map_dict {
+	for label, _ := range tile_dict {
 		labels = append(labels, label)
 	}
 
 	sort.Strings(labels)
 
-	map_catalog := make([]Map, 0)
+	tile_connections := make([]*XYZTiles, 0)
 
 	for _, label := range labels {
-		map_catalog = append(map_catalog, map_dict[label])
+		tile_connections = append(tile_connections, tile_dict[label])
 	}
 
 	now := time.Now()
 
 	vars := TemplateVars{
-		Catalog:      map_catalog,
-		LastModified: now.Format(time.RFC3339),
-		Args:         strings.Join(os.Args, " "),
+		TileConnections: tile_connections,
+		LastModified:    now.Format(time.RFC3339),
+		Args:            strings.Join(os.Args, " "),
 	}
 
 	out := os.Stdout

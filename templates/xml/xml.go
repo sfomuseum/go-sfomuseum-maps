@@ -1,8 +1,8 @@
-package javascript
+package xml
 
 import (
 	"embed"
 )
 
-//go:embed *.js
+//go:embed *.xml
 var FS embed.FS
