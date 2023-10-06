@@ -24,7 +24,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 )
 
-type XYZTiles struct {
+type ZXYTiles struct {
 	Username       string
 	Password       string
 	ZMin           int
@@ -38,7 +38,7 @@ type XYZTiles struct {
 }
 
 type TemplateVars struct {
-	TileConnections []*XYZTiles
+	TileConnections []*ZXYTiles
 	LastModified    string
 	// as in the command-line args so we can understand how the file was create
 	// this was largely to account for the desire to exclude 1937 from the T2 installation
@@ -75,9 +75,9 @@ func main() {
 		log.Fatal("Missing template")
 	}
 
-	tile_dict := make(map[string]*XYZTiles)
+	tile_dict := make(map[string]*ZXYTiles)
 
-	tile_ch := make(chan *XYZTiles)
+	tile_ch := make(chan *ZXYTiles)
 	done_ch := make(chan bool)
 
 	cb := func(ctx context.Context, path string, r io.ReadSeeker, args ...interface{}) error {
@@ -141,7 +141,7 @@ func main() {
 
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
-		t := &XYZTiles{
+		t := &ZXYTiles{
 			Name:           fmt.Sprintf("SFO %s (SFO Museum)", label),
 			label:          strconv.Itoa(year),
 			ZMin:           min_zoom,
@@ -198,7 +198,7 @@ func main() {
 
 	sort.Strings(labels)
 
-	tile_connections := make([]*XYZTiles, 0)
+	tile_connections := make([]*ZXYTiles, 0)
 
 	for _, label := range labels {
 		tile_connections = append(tile_connections, tile_dict[label])
