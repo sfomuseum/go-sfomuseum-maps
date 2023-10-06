@@ -55,9 +55,13 @@ Generate a fresh QGIS `qgsXYZTilesConnections` XML file from sfomuseum-data-maps
 
 A JavaScript library using the package name `sfomuseum.maps.catalog` that defines SFO aerial map tiles and methods for working with.
 
+* [dist/sfomuseum.maps.catalog.js](dist/sfomuseum.maps.catalog.js)
+
 ### sfomuseum.maps.tileconnections.xml
 
 A QGIS `qgsXYZTilesConnections` XML file that can be imported in to QGIS to load SFO aerial map "XYZ" layers.
+
+* [dist/sfomuseum.maps.tileconnections.xml](dist/sfomuseum.maps.tileconnections.xml)
 
 _Important: The `qgsXYZTilesConnections` document definition does not provide any means to define extents for an XYZ layer so if you load any of these SFO aerial layers anywhere except the general area of SFO QGIS will start emitting a lot of tile requests that will fail._
 
