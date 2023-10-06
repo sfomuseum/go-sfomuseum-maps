@@ -142,7 +142,7 @@ func main() {
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
 		t := &XYZTiles{
-			Name:           label,
+			Name:           fmt.Sprintf("SFO %s (SFO Museum)", label),
 			label:          strconv.Itoa(year),
 			ZMin:           min_zoom,
 			ZMax:           max_zoom,
