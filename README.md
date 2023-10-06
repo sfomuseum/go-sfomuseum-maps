@@ -63,7 +63,7 @@ A QGIS `qgsXYZTilesConnections` XML file that can be imported in to QGIS to load
 
 * [dist/sfomuseum.maps.tileconnections.xml](dist/sfomuseum.maps.tileconnections.xml)
 
-_Important: The `qgsXYZTilesConnections` document definition does not provide any means to define extents for an XYZ layer so if you load any of these SFO aerial layers anywhere except the general area of SFO QGIS will start emitting a lot of tile requests that will fail._
+_Important: The `qgsXYZTilesConnections` document definition does not provide any means to define extents for an XYZ layer so if you load any of these SFO aerial layers outside the general area of SFO QGIS will start emitting a lot of tile requests that will fail._
 
 ## See also
 
