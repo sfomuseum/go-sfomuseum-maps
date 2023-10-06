@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/sfomuseum/go-flags/multi"
+	"github.com/sfomuseum/go-sfomuseum-maps"
 	"github.com/sfomuseum/go-sfomuseum-maps/templates/javascript"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
@@ -29,7 +30,8 @@ type MapCatalog []Map
 
 type Map struct {
 	Label      string `json:"label"`
-	Year       int    `json:"year"`
+	Year       int    `json:"year"`	// Deprecated
+	// Date       string `json:"date"`
 	MinZoom    int    `json:"min_zoom"`
 	MaxZoom    int    `json:"max_zoom"`
 	Source     string `json:"source,omitempty"`
@@ -46,9 +48,6 @@ type TemplateVars struct {
 }
 
 func main() {
-
-	// mode := flag.String("mode", "repo://", "...")
-	// uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
 
 	mode := flag.String("mode", "git://", "...")
 	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
@@ -101,19 +100,7 @@ func main() {
 		body, err := io.ReadAll(fh)
 
 		if err != nil {
-			return err
-		}
-
-		min_rsp := gjson.GetBytes(body, "properties.mz:min_zoom")
-
-		if !min_rsp.Exists() {
-			return fmt.Errorf("%s is missing mz:min_zoom", path)
-		}
-
-		max_rsp := gjson.GetBytes(body, "properties.mz:max_zoom")
-
-		if !max_rsp.Exists() {
-			return fmt.Errorf("%s is missing mz:max_zoom", path)
+			return fmt.Errorf("Failed to read data for %s, %w", path, err)
 		}
 
 		src_rsp := gjson.GetBytes(body, "properties.src:geom")
@@ -133,13 +120,11 @@ func main() {
 			src_id = id_rsp.String()
 		}
 
-		uri_rsp := gjson.GetBytes(body, "properties.sfomuseum:uri")
+		label, err := maps.DeriveLabel(body)
 
-		if !uri_rsp.Exists() {
-			return fmt.Errorf("Missing sfomuseum:uri")
+		if err != nil {
+			return fmt.Errorf("Failed to derive year label for %s, %w", path, err)
 		}
-
-		label := uri_rsp.String()
 
 		if len(exclude) > 0 {
 
@@ -149,6 +134,8 @@ func main() {
 				}
 			}
 		}
+
+		// START OF deprecate this...
 
 		incept_rsp := gjson.GetBytes(body, "properties.date:inception_upper")
 
@@ -165,14 +152,20 @@ func main() {
 
 		year := incept_t.Year()
 
-		min_zoom := int(min_rsp.Int())
-		max_zoom := int(max_rsp.Int())
+		// END OF deprecate this...
+
+		min_zoom, max_zoom, err := maps.DeriveZoomLevels(body)
+
+		if err != nil {
+			return fmt.Errorf("Failed to derive zoom levels for %s, %w", path, err)
+		}
 
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
 		m := Map{
 			Label:      label,
 			Year:       year,
+			// Date:       year_label,
 			MinZoom:    min_zoom,
 			MaxZoom:    max_zoom,
 			Source:     src,
