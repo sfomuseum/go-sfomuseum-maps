@@ -13,14 +13,13 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/sfomuseum/go-flags/multi"
+	"github.com/sfomuseum/go-sfomuseum-maps"
 	"github.com/sfomuseum/go-sfomuseum-maps/templates/xml"
-	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
 )
 
@@ -47,11 +46,8 @@ type TemplateVars struct {
 
 func main() {
 
-	// mode := flag.String("mode", "repo://", "...")
-	// uri := flag.String("uri", "/usr/local/data/sfomuseum-data-maps", "...")
-
-	mode := flag.String("mode", "git://", "...")
-	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "...")
+	mode := flag.String("mode", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator URI.")
+	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator source.")
 
 	var exclude multi.MultiString
 	flag.Var(&exclude, "exclude", "Zero or more maps to exclude (based on their sfomuseum:uri value)")
@@ -92,25 +88,11 @@ func main() {
 			return err
 		}
 
-		min_rsp := gjson.GetBytes(body, "properties.mz:min_zoom")
+		label, err := maps.DeriveLabel(body)
 
-		if !min_rsp.Exists() {
-			return fmt.Errorf("%s is missing mz:min_zoom", path)
+		if err != nil {
+			return fmt.Errorf("Failed to derive year label for %s, %w", path, err)
 		}
-
-		max_rsp := gjson.GetBytes(body, "properties.mz:max_zoom")
-
-		if !max_rsp.Exists() {
-			return fmt.Errorf("%s is missing mz:max_zoom", path)
-		}
-
-		uri_rsp := gjson.GetBytes(body, "properties.sfomuseum:uri")
-
-		if !uri_rsp.Exists() {
-			return fmt.Errorf("Missing sfomuseum:uri")
-		}
-
-		label := uri_rsp.String()
 
 		if len(exclude) > 0 {
 
@@ -121,29 +103,25 @@ func main() {
 			}
 		}
 
-		incept_rsp := gjson.GetBytes(body, "properties.date:inception_upper")
-
-		if !incept_rsp.Exists() {
-			return fmt.Errorf("%s is missing date:inception_upper", path)
-		}
-
-		incept_str := incept_rsp.String()
-		incept_t, err := time.Parse("2006-01-02", incept_str)
+		year_label, err := maps.DeriveYearLabel(body)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to derive year label for %s, %w", path, err)
 		}
 
-		year := incept_t.Year()
+		min_zoom, max_zoom, err := maps.DeriveZoomLevels(body)
 
-		min_zoom := int(min_rsp.Int())
-		max_zoom := int(max_rsp.Int())
+		if err != nil {
+			return fmt.Errorf("Failed to derive zoom levels for %s, %w", path, err)
+		}
 
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
+		name := fmt.Sprintf("SFO %s (SFO Museum)", label)
+
 		t := &ZXYTiles{
-			Name:           fmt.Sprintf("SFO %s (SFO Museum)", label),
-			label:          strconv.Itoa(year),
+			Name:           name,
+			label:          year_label,
 			ZMin:           min_zoom,
 			ZMax:           max_zoom,
 			URL:            url,
