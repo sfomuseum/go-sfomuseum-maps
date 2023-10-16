@@ -20,7 +20,12 @@ sfomuseum.maps.catalog = (function(){
 	// code (20190924/thisisaaronland)
 
 	'asYears': function(){
+	    console.log("sfomuseum.maps.catalog.asYears is deprecated, please use sfomuseum.maps.catalog.asDictionary");
+	    return self.asDictionary();
+	},
 
+	'asDictionary': function(){
+	    
             var catalog = self.data();
 	    var count = catalog.length;
 
