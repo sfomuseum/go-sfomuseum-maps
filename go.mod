@@ -3,6 +3,7 @@ module github.com/sfomuseum/go-sfomuseum-maps
 go 1.24.0
 
 require (
+	github.com/jtacoma/uritemplates v1.0.0
 	github.com/paulmach/orb v0.11.1
 	github.com/sfomuseum/go-flags v0.10.0
 	github.com/sfomuseum/go-sfomuseum-writer/v3 v3.0.3
