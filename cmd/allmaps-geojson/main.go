@@ -1,4 +1,12 @@
+// `allmaps-geojson` automates (most of) the process of generating a sfomuseum-data-maps GeoJSON file derive from an Allmaps annotations GeoJSON URL.
+// It is NOT a general purpose tool. 
 package main
+
+/*
+
+> go run cmd/allmaps-geojson/main.go -writer-uri stdout:// -map-url https://annotations.allmaps.org/images/c157f0e8c25aa123.geojson -min-zoom 12 -max-zoom 15 -year 1936 -name 'Mills Field (1936)'
+
+*
 
 import (
 	"context"
