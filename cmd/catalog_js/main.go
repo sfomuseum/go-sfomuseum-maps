@@ -29,8 +29,8 @@ type MapDict map[string]Map
 type MapCatalog []Map
 
 type Map struct {
-	Label      string `json:"label"`
-	Year       int    `json:"year"`	// Deprecated
+	Label string `json:"label"`
+	Year  int    `json:"year"` // Deprecated
 	// Date       string `json:"date"`
 	MinZoom    int    `json:"min_zoom"`
 	MaxZoom    int    `json:"max_zoom"`
@@ -163,8 +163,8 @@ func main() {
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
 
 		m := Map{
-			Label:      label,
-			Year:       year,
+			Label: label,
+			Year:  year,
 			// Date:       year_label,
 			MinZoom:    min_zoom,
 			MaxZoom:    max_zoom,
