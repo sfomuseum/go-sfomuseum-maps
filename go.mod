@@ -11,9 +11,11 @@ require (
 	github.com/whosonfirst/go-reader v1.0.2
 	github.com/whosonfirst/go-whosonfirst-export/v2 v2.8.4
 	github.com/whosonfirst/go-whosonfirst-feature v0.0.28
+	github.com/whosonfirst/go-whosonfirst-id v1.3.0
 	github.com/whosonfirst/go-whosonfirst-iterate-git/v2 v2.1.8
 	github.com/whosonfirst/go-whosonfirst-iterate/v2 v2.5.0
 	github.com/whosonfirst/go-whosonfirst-reader v1.0.2
+	github.com/whosonfirst/go-whosonfirst-writer/v3 v3.1.4
 	github.com/whosonfirst/go-writer/v3 v3.1.1
 )
 
@@ -58,10 +60,8 @@ require (
 	github.com/whosonfirst/go-whosonfirst-crawl v0.2.2 // indirect
 	github.com/whosonfirst/go-whosonfirst-flags v0.5.1 // indirect
 	github.com/whosonfirst/go-whosonfirst-format v0.4.1 // indirect
-	github.com/whosonfirst/go-whosonfirst-id v1.2.6 // indirect
 	github.com/whosonfirst/go-whosonfirst-sources v0.1.0 // indirect
 	github.com/whosonfirst/go-whosonfirst-uri v1.3.0 // indirect
-	github.com/whosonfirst/go-whosonfirst-writer/v3 v3.1.3 // indirect
 	github.com/whosonfirst/walk v0.0.2 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.mongodb.org/mongo-driver v1.11.4 // indirect
