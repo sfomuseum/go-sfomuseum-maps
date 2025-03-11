@@ -4,7 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"os"
 
 	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-sfomuseum-maps/allmaps"
@@ -93,4 +96,39 @@ func main() {
 	log.Println(image_url)
 
 	// END OF put me in a function or something...
+
+	rsp, err := http.Get(image_url)
+
+	if err != nil {
+		log.Fatalf("Failed to fetch %s, %v", image_url, err)
+	}
+
+	defer rsp.Body.Close()
+
+	allmaps_im := fmt.Sprintf("%s.jpg", allmaps_id)
+
+	wr, err := os.OpenFile(allmaps_im, os.O_RDWR|os.O_CREATE, 0644)
+
+	if err != nil {
+		log.Fatalf("Failed to open %s for writing, %v", allmaps_im, err)
+	}
+
+	_, err = io.Copy(wr, rsp.Body)
+
+	if err != nil {
+		log.Fatalf("Failed to copy %s to %s, %v", image_url, allmaps_im, err)
+	}
+
+	err = wr.Close()
+
+	if err != nil {
+		log.Fatalf("Failed to close %s after writing, %v", allmaps_im, err)
+	}
+
+	/*
+
+		$> curl -s https://annotations.allmaps.org/maps/a0c0c652e49f4596 | allmaps script geotiff | bash
+		$> gdal2tiles.py ced8faec8c108002_a0c0c652e49f4596-warped.tif
+
+	*/
 }
