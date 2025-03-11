@@ -6,7 +6,7 @@ package main
 
 > go run cmd/allmaps-geojson/main.go -writer-uri stdout:// -map-url https://annotations.allmaps.org/images/c157f0e8c25aa123.geojson -min-zoom 12 -max-zoom 15 -year 1936 -name 'Mills Field (1936)'
 
-*
+*/
 
 import (
 	"context"
@@ -103,11 +103,11 @@ func main() {
 		"sfomuseum:placetype": "map",
 		"sfomuseum:uri": year,
 		"mz:is_current": -1,
-		"mz:max_zoom": min_zoom,
-		"mz:min_zoom": max_zoom,
+		"mz:max_zoom": max_zoom,
+		"mz:min_zoom": min_zoom,
 		"edtf:inception": year,
 		"edtf:cessation": year,
-		"src:geom": "allmaps",
+		"src:geom": "sfomuseum",
 	}
 
 	// If parent_id != -1 then: get hierarchy...
