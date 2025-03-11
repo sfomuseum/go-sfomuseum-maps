@@ -196,7 +196,7 @@ func main() {
 	// It is probably worth creating a Golang struct reflecting the Allmaps
 	// annotations data format and using that (and the GCPs it defines) to
 	// generate the gdal_translate command. But not today...
-	
+
 	sh, err := os.OpenFile(allmaps_sh, os.O_RDWR|os.O_CREATE, 0644)
 
 	if err != nil {
