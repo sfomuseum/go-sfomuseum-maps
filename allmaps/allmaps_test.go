@@ -1,13 +1,13 @@
 package allmaps
 
-import(
+import (
 	"testing"
 )
 
 func TestDeriveImageId(t *testing.T) {
 
 	tests := map[string]string{
-		"https://annotations.allmaps.org/maps/a0c0c652e49f4596": "ced8faec8c108002",
+		"https://annotations.allmaps.org/maps/a0c0c652e49f4596":           "ced8faec8c108002",
 		"https://annotations.allmaps.org/images/c157f0e8c25aa123.geojson": "c157f0e8c25aa123",
 	}
 
