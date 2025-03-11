@@ -1,2 +1,6 @@
 *~
 bin
+*_*-warped.tif
+*_*-warped/
+*_*.geojson
+*_*.vrt
