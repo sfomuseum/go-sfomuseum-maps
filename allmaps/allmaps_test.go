@@ -4,6 +4,27 @@ import (
 	"testing"
 )
 
+func TestDeriveAnnotationId(t *testing.T) {
+
+	tests := map[string]string{
+		"https://annotations.allmaps.org/maps/a0c0c652e49f4596": "a0c0c652e49f4596",
+	}
+
+	for url, expected_id := range tests {
+
+		id, err := DeriveAnnotationId(url)
+
+		if err != nil {
+			t.Fatalf("Failed to derive annotation ID for '%s', %v", url, err)
+		}
+
+		if id != expected_id {
+			t.Fatalf("Unexpected annotation ID for '%s', '%s'. Expected '%s'", url, id, expected_id)
+		}
+	}
+
+}
+
 func TestDeriveImageId(t *testing.T) {
 
 	tests := map[string]string{

@@ -2,8 +2,6 @@ package allmaps
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -42,18 +40,10 @@ func DeriveSFOMuseumImageId(allmaps_url string) (int64, error) {
 		return -1, fmt.Errorf("Failed to derive tiles path")
 	}
 
-	rsp, err := http.Get(allmaps_url)
+	body, err := fetchURL(allmaps_url)
 
 	if err != nil {
 		return -1, err
-	}
-
-	defer rsp.Body.Close()
-
-	body, err := io.ReadAll(rsp.Body)
-
-	if err != nil {
-		return -1, fmt.Errorf("Failed to read body, %w", err)
 	}
 
 	tiles_rsp := gjson.GetBytes(body, tiles_path)

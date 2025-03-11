@@ -19,7 +19,6 @@ import (
 func main() {
 
 	var map_url string
-
 	var media_reader_uri string
 
 	flag.StringVar(&map_url, "map-url", "", "...")
@@ -34,8 +33,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create media reader, %v", err)
 	}
+	
+	annotation_id, err := allmaps.DeriveAnnotationId(map_url)
 
-	allmaps_id, err := allmaps.DeriveImageId(map_url)
+	if err != nil {
+		log.Fatalf("Failed to derive Allmaps annotation ID, %v", err)
+	}
+
+	image_id, err := allmaps.DeriveImageId(map_url)
 
 	if err != nil {
 		log.Fatalf("Failed to derive Allmaps image ID, %v", err)
@@ -47,16 +52,17 @@ func main() {
 		log.Fatalf("Failed to derive SFO Museum image ID, %v", err)
 	}
 
-	log.Println(map_url, allmaps_id, sfom_id)
+	log.Println(map_url, image_id, sfom_id)
 
+	// START OF derive (SFO Museum) image URL to rectify
+	// START OF put me in a function or something...
+	
 	media_body, err := wof_reader.LoadBytes(ctx, media_r, sfom_id)
 
 	if err != nil {
 		log.Fatalf("Failed to read body for %d, %v", sfom_id, err)
 	}
-
-	// START OF put me in a function or something...
-
+	
 	sz_label := "o"
 	sz_path := fmt.Sprintf("properties.media:properties.sizes.%s", sz_label)
 
@@ -96,7 +102,10 @@ func main() {
 	log.Println(image_url)
 
 	// END OF put me in a function or something...
-
+	// END OF derive (SFO Museum) image URL to rectify
+	
+	// START OF copy source image to {ALLMAPS_IMAGE_ID}.jpg
+	
 	rsp, err := http.Get(image_url)
 
 	if err != nil {
@@ -105,7 +114,8 @@ func main() {
 
 	defer rsp.Body.Close()
 
-	allmaps_im := fmt.Sprintf("%s.jpg", allmaps_id)
+	allmaps_im := fmt.Sprintf("%s.jpg", image_id)
+	warped_im := fmt.Sprintf("%s_%s-warped.tiff", image_id, annotation_id)	
 
 	wr, err := os.OpenFile(allmaps_im, os.O_RDWR|os.O_CREATE, 0644)
 
@@ -125,6 +135,11 @@ func main() {
 		log.Fatalf("Failed to close %s after writing, %v", allmaps_im, err)
 	}
 
+	// END OF copy source image to {ALLMAPS_IMAGE_ID}.jpg
+
+	fmt.Printf("curl -s %s | allmaps script geotiff | bash\n", map_url)
+	fmt.Printf("gdal2tiles.py %s\n", warped_im)
+	
 	/*
 
 		$> curl -s https://annotations.allmaps.org/maps/a0c0c652e49f4596 | allmaps script geotiff | bash

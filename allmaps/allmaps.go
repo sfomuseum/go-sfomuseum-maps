@@ -2,14 +2,45 @@ package allmaps
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
 
 	"github.com/tidwall/gjson"
 )
+
+func DeriveAnnotationId(allmaps_url string) (string, error) {
+
+	u, err := url.Parse(allmaps_url)
+
+	if err != nil {
+		return "", err
+	}
+
+	if u.Host != "annotations.allmaps.org" {
+		return "", fmt.Errorf("Invalid host")
+	}
+
+	if strings.HasPrefix(u.Path, "/maps/") {
+
+		body, err := fetchURL(allmaps_url)
+
+		if err != nil {
+			return "", fmt.Errorf("Failed to read body, %w", err)
+		}
+
+		id_rsp := gjson.GetBytes(body, "body._allmaps.id")
+
+		if !id_rsp.Exists() {
+			return "", fmt.Errorf("Body missing image ID")
+		}
+
+		image_id := filepath.Base(id_rsp.String())
+		return image_id, nil
+	}
+
+	return "", fmt.Errorf("Unsupported URL")
+}
 
 func DeriveImageId(allmaps_url string) (string, error) {
 
@@ -43,15 +74,7 @@ func DeriveImageId(allmaps_url string) (string, error) {
 
 	if strings.HasPrefix(u.Path, "/maps/") {
 
-		rsp, err := http.Get(allmaps_url)
-
-		if err != nil {
-			return "", err
-		}
-
-		defer rsp.Body.Close()
-
-		body, err := io.ReadAll(rsp.Body)
+		body, err := fetchURL(allmaps_url)
 
 		if err != nil {
 			return "", fmt.Errorf("Failed to read body, %w", err)
