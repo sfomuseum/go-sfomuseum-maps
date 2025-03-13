@@ -2,6 +2,9 @@
 // It is NOT a general purpose tool. As of this writing it also writes all its files to the current working directory and depends on
 // a number of other tools to already be installed: the allmaps command line tool, gdal, curl. Final output files are not moved, renamed
 // or automatically cleaned up. They should be eventually but today they are not.
+//
+// Note: As of March 2025, Helmert transformations which are available in the Allmaps Editor UI are NOT available in GDAL warp/translate
+// operations. Womp womp...
 package main
 
 /*
