@@ -46,8 +46,8 @@ type TemplateVars struct {
 
 func main() {
 
-	mode := flag.String("mode", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator URI.")
-	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator source.")
+	iterator_uri := flag.String("iterator-uri", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator URI.")
+	iterator_source := flag.String("iterator-source", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator source.")
 
 	var exclude multi.MultiString
 	flag.Var(&exclude, "exclude", "Zero or more maps to exclude (based on their sfomuseum:uri value)")
@@ -73,16 +73,13 @@ func main() {
 
 	tile_dict := make(map[string]*ZXYTiles)
 
-	tile_ch := make(chan *ZXYTiles)
-	done_ch := make(chan bool)
-
-	iter, err := iterate.NewIterator(ctx, *mode)
+	iter, err := iterate.NewIterator(ctx, *iterator_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to create new iterator, %v", err)
 	}
 
-	for rec, err := range iter.Iterate(ctx, *uri) {
+	for rec, err := range iter.Iterate(ctx, *iterator_source) {
 
 		if err != nil {
 			log.Fatalf("Iterator yielded an error, %v", err)
@@ -140,32 +137,14 @@ func main() {
 			TilePixelRatio: 1,
 		}
 
-		tile_ch <- t
-	}
+		_, exists := tile_dict[t.label]
 
-	go func() {
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-done_ch:
-				return
-			case t := <-tile_ch:
-
-				_, exists := tile_dict[t.label]
-
-				if exists {
-					log.Fatalf("Duplicate label")
-				}
-
-				tile_dict[t.label] = t
-			}
+		if exists {
+			log.Fatalf("Duplicate label %s", t.label)
 		}
 
-	}()
-
-	done_ch <- true
+		tile_dict[t.label] = t
+	}
 
 	labels := make([]string, 0)
 

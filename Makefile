@@ -1,7 +1,7 @@
 GOMOD=$(shell test -f "go.work" && echo "readonly" || echo "vendor")
 
-REFRESH_MODE=git://
-REFRESH_URI=https://github.com/sfomuseum-data/sfomuseum-data-maps.git
+ITERATOR_URI=git://
+ITERATOR_SOURCE=https://github.com/sfomuseum-data/sfomuseum-data-maps.git
 
 refresh:
 	@make cli
@@ -10,8 +10,8 @@ refresh:
 
 refresh-local:
 	@make cli
-	@make catalog.js REFRESH_MODE=repo:// REFRESH_URI=/usr/local/data/sfomuseum-data-maps
-	@make tile_connections  REFRESH_MODE=repo:// REFRESH_URI=/usr/local/data/sfomuseum-data-maps
+	@make catalog.js ITERATOR_URI=repo:// ITERATOR_SOURCE=/usr/local/data/sfomuseum-data-maps
+	@make tile_connections  ITERATOR_URI=repo:// ITERATOR_SOURCE=/usr/local/data/sfomuseum-data-maps
 
 cli:
 	go build -mod $(GOMOD) -ldflags="-s -w" -o bin/catalog_js cmd/catalog_js/main.go
@@ -19,7 +19,7 @@ cli:
 	go build -mod $(GOMOD) -ldflags="-s -w" -o bin/new cmd/new/main.go
 
 catalog.js:	
-	./bin/catalog_js -mode $(REFRESH_MODE) -uri $(REFRESH_URI) > dist/sfomuseum.maps.catalog.js
+	./bin/catalog_js -iterator-uri $(ITERATOR_URI) -iterator-source $(ITERATOR_SOURCE) > dist/sfomuseum.maps.catalog.js
 
 tile_connections:
-	./bin/qgis-tile-connections -mode $(REFRESH_MODE) -uri $(REFRESH_URI) > dist/sfomuseum.maps.tileconnections.xml
+	./bin/qgis-tile-connections -iterator-uri $(ITERATOR_URI) -iterator-source $(ITERATOR_SOURCE) > dist/sfomuseum.maps.tileconnections.xml

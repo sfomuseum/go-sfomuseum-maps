@@ -49,8 +49,8 @@ type TemplateVars struct {
 
 func main() {
 
-	iterator_uri := flag.String("iterator-uri", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator URI.")
-	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator source.")
+	iterator_uri := flag.String("iterator-uri", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v3.Iterator URI.")
+	iterator_source := flag.String("iterator-source", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v3.Iterator source.")
 
 	var exclude multi.MultiString
 	flag.Var(&exclude, "exclude", "Zero or more maps to exclude (based on their sfomuseum:uri value)")
@@ -88,16 +88,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	map_ch := make(chan Map)
-	done_ch := make(chan bool)
-
 	iter, err := iterate.NewIterator(ctx, *iterator_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to create new iterator, %v", err)
 	}
 
-	for rec, err := range iter.Iterate(ctx, *uri) {
+	for rec, err := range iter.Iterate(ctx, *iterator_source) {
 
 		if err != nil {
 			log.Fatalf("Iterator reported an error, %v", err)
@@ -185,32 +182,14 @@ func main() {
 			URL:        url,
 		}
 
-		map_ch <- m
-	}
+		_, exists := map_dict[m.Label]
 
-	go func() {
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-done_ch:
-				return
-			case m := <-map_ch:
-
-				_, exists := map_dict[m.Label]
-
-				if exists {
-					log.Fatalf("Duplicate Label")
-				}
-
-				map_dict[m.Label] = m
-			}
+		if exists {
+			log.Fatalf("Duplicate label, %s", m.Label)
 		}
 
-	}()
-
-	done_ch <- true
+		map_dict[m.Label] = m
+	}
 
 	labels := make([]string, 0)
 
