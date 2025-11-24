@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/paulmach/orb/geojson"
-	_ "github.com/sfomuseum/go-sfomuseum-export/v2"
-	"github.com/whosonfirst/go-whosonfirst-export/v2"
+	_ "github.com/sfomuseum/go-sfomuseum-export/v3"
+	"github.com/whosonfirst/go-whosonfirst-export/v3"
 	wof_writer "github.com/whosonfirst/go-whosonfirst-writer/v3"
 	go_writer "github.com/whosonfirst/go-writer/v3"
 )

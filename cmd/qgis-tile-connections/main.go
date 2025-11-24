@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/whosonfirst/go-whosonfirst-iterate-git/v2"
+	_ "github.com/whosonfirst/go-whosonfirst-iterate-git/v3"
 )
 
 import (
@@ -20,7 +20,7 @@ import (
 	"github.com/sfomuseum/go-flags/multi"
 	"github.com/sfomuseum/go-sfomuseum-maps"
 	"github.com/sfomuseum/go-sfomuseum-maps/templates/xml"
-	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
+	"github.com/whosonfirst/go-whosonfirst-iterate/v3"
 )
 
 type ZXYTiles struct {
@@ -76,29 +76,41 @@ func main() {
 	tile_ch := make(chan *ZXYTiles)
 	done_ch := make(chan bool)
 
-	cb := func(ctx context.Context, path string, r io.ReadSeeker, args ...interface{}) error {
+	iter, err := iterate.NewIterator(ctx, *mode)
 
-		if filepath.Ext(path) != ".geojson" {
-			return nil
-		}
+	if err != nil {
+		log.Fatalf("Failed to create new iterator, %v", err)
+	}
 
-		body, err := io.ReadAll(r)
+	for rec, err := range iter.Iterate(ctx, *uri) {
 
 		if err != nil {
-			return err
+			log.Fatalf("Iterator yielded an error, %v", err)
+		}
+
+		defer rec.Body.Close()
+
+		if filepath.Ext(rec.Path) != ".geojson" {
+			continue
+		}
+
+		body, err := io.ReadAll(rec.Body)
+
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		label, err := maps.DeriveLabel(body)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive year label for %s, %w", path, err)
+			log.Fatalf("Failed to derive year label for %s, %v", rec.Path, err)
 		}
 
 		if len(exclude) > 0 {
 
 			for _, e := range exclude {
 				if label == e {
-					return nil
+					continue
 				}
 			}
 		}
@@ -106,13 +118,13 @@ func main() {
 		year_label, err := maps.DeriveYearLabel(body)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive year label for %s, %w", path, err)
+			log.Fatalf("Failed to derive year label for %s, %v", rec.Path, err)
 		}
 
 		min_zoom, max_zoom, err := maps.DeriveZoomLevels(body)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive zoom levels for %s, %w", path, err)
+			log.Fatalf("Failed to derive zoom levels for %s, %v", rec.Path, err)
 		}
 
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
@@ -129,7 +141,6 @@ func main() {
 		}
 
 		tile_ch <- t
-		return nil
 	}
 
 	go func() {
@@ -153,18 +164,6 @@ func main() {
 		}
 
 	}()
-
-	iter, err := iterator.NewIterator(ctx, *mode, cb)
-
-	if err != nil {
-		log.Fatalf("Failed to create new iterator, %v", err)
-	}
-
-	err = iter.IterateURIs(ctx, *uri)
-
-	if err != nil {
-		log.Fatalf("Failed to iterate '%s', %v", *uri, err)
-	}
 
 	done_ch <- true
 

@@ -49,8 +49,8 @@ import (
 	"github.com/jtacoma/uritemplates"
 	"github.com/sfomuseum/go-sfomuseum-maps/allmaps"
 	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-reader"
-	wof_reader "github.com/whosonfirst/go-whosonfirst-reader"
+	"github.com/whosonfirst/go-reader/v2"
+	wof_reader "github.com/whosonfirst/go-whosonfirst-reader/v2"
 )
 
 func main() {
@@ -203,7 +203,7 @@ func main() {
 	sh, err := os.OpenFile(allmaps_sh, os.O_RDWR|os.O_CREATE, 0644)
 
 	if err != nil {
-		log.Fatalf("Failed to open %s for writing, %v", allmaps_sh)
+		log.Fatalf("Failed to open %s for writing, %v", allmaps_sh, err)
 	}
 
 	l1 := fmt.Sprintf("curl -s %s | allmaps script geotiff | bash\n", map_url)

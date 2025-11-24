@@ -12,11 +12,11 @@ import (
 	"github.com/paulmach/orb/geojson"
 	"github.com/sfomuseum/go-flags/multi"
 	sfom_writer "github.com/sfomuseum/go-sfomuseum-writer/v3"
-	"github.com/whosonfirst/go-reader"
-	"github.com/whosonfirst/go-whosonfirst-export/v2"
+	"github.com/whosonfirst/go-reader/v2"
+	"github.com/whosonfirst/go-whosonfirst-export/v3"
 	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
-	wof_reader "github.com/whosonfirst/go-whosonfirst-reader"
+	wof_reader "github.com/whosonfirst/go-whosonfirst-reader/v2"
 	"github.com/whosonfirst/go-writer/v3"
 )
 

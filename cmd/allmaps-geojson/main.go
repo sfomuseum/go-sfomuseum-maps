@@ -1,5 +1,5 @@
 // `allmaps-geojson` automates (most of) the process of generating a sfomuseum-data-maps GeoJSON file derive from an Allmaps annotations GeoJSON URL.
-// It is NOT a general purpose tool. 
+// It is NOT a general purpose tool.
 package main
 
 /*
@@ -11,16 +11,16 @@ package main
 import (
 	"context"
 	"flag"
-	"io"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"net/http"
 
 	"github.com/paulmach/orb/geojson"
+	wof_id "github.com/whosonfirst/go-whosonfirst-id"
+	wof_writer "github.com/whosonfirst/go-whosonfirst-writer/v3"
 	"github.com/whosonfirst/go-writer/v3"
-	wof_id "github.com/whosonfirst/go-whosonfirst-id"	
-	wof_writer "github.com/whosonfirst/go-whosonfirst-writer/v3"	
 )
 
 func main() {
@@ -33,8 +33,8 @@ func main() {
 	var year int
 
 	var min_zoom int
-	var max_zoom int	
-	
+	var max_zoom int
+
 	flag.StringVar(&map_url, "map-url", "", "...")
 	flag.StringVar(&writer_uri, "writer-uri", "repo:///usr/local/data/sfomuseum-data-maps", "...")
 
@@ -42,8 +42,8 @@ func main() {
 	flag.Int64Var(&parent_id, "parent-id", -1, "...")
 	flag.IntVar(&year, "year", 0, "...")
 	flag.IntVar(&min_zoom, "min-zoom", 0, "...")
-	flag.IntVar(&max_zoom, "max-zoom", 0, "...")	
-	
+	flag.IntVar(&max_zoom, "max-zoom", 0, "...")
+
 	flag.Parse()
 
 	ctx := context.Background()
@@ -55,11 +55,11 @@ func main() {
 	}
 
 	// START OF put me in a function... ?
-	
+
 	rsp, err := http.Get(map_url)
 
 	if err != nil {
-		log.Fatalf("Failed to retrieve %s, %v", err)
+		log.Fatalf("Failed to retrieve %s, %v", map_url, err)
 	}
 
 	defer rsp.Body.Close()
@@ -89,35 +89,35 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to derive new ID, %v", err)
 	}
-	
+
 	new_props := map[string]any{
-		"wof:id": new_id,
-		"wof:name": name,
-		"wof:repo": "sfomuseum-data-maps",
+		"wof:id":        new_id,
+		"wof:name":      name,
+		"wof:repo":      "sfomuseum-data-maps",
 		"wof:placetype": "custom",
 		"wof:placetype_alt": []string{
 			"map",
 		},
-		"wof:country": "US",
-		"wof:parent_id": parent_id,
+		"wof:country":         "US",
+		"wof:parent_id":       parent_id,
 		"sfomuseum:placetype": "map",
-		"sfomuseum:uri": year,
-		"mz:is_current": -1,
-		"mz:max_zoom": max_zoom,
-		"mz:min_zoom": min_zoom,
-		"edtf:inception": year,
-		"edtf:cessation": year,
-		"src:geom": "sfomuseum",
+		"sfomuseum:uri":       year,
+		"mz:is_current":       -1,
+		"mz:max_zoom":         max_zoom,
+		"mz:min_zoom":         min_zoom,
+		"edtf:inception":      year,
+		"edtf:cessation":      year,
+		"src:geom":            "sfomuseum",
 	}
 
 	// If parent_id != -1 then: get hierarchy...
-	
+
 	for k, v := range f.Properties {
 
 		if k == "_allmaps" {
 			k = "meta"
 		}
-		
+
 		new_k := fmt.Sprintf("allmaps:%s", k)
 		new_props[new_k] = v
 	}
@@ -138,4 +138,3 @@ func main() {
 
 	slog.Info("Created new record", "id", new_id)
 }
-

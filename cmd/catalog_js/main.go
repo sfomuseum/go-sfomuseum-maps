@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/whosonfirst/go-whosonfirst-iterate-git/v2"
+	_ "github.com/whosonfirst/go-whosonfirst-iterate-git/v3"
 )
 
 import (
@@ -22,7 +22,7 @@ import (
 	"github.com/sfomuseum/go-sfomuseum-maps"
 	"github.com/sfomuseum/go-sfomuseum-maps/templates/javascript"
 	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-iterate/v2/iterator"
+	"github.com/whosonfirst/go-whosonfirst-iterate/v3"
 )
 
 type MapDict map[string]Map
@@ -49,7 +49,7 @@ type TemplateVars struct {
 
 func main() {
 
-	mode := flag.String("mode", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator URI.")
+	iterator_uri := flag.String("iterator-uri", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator URI.")
 	uri := flag.String("uri", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v2/iterator source.")
 
 	var exclude multi.MultiString
@@ -91,22 +91,34 @@ func main() {
 	map_ch := make(chan Map)
 	done_ch := make(chan bool)
 
-	cb := func(ctx context.Context, path string, fh io.ReadSeeker, args ...interface{}) error {
+	iter, err := iterate.NewIterator(ctx, *iterator_uri)
 
-		if filepath.Ext(path) != ".geojson" {
-			return nil
-		}
+	if err != nil {
+		log.Fatalf("Failed to create new iterator, %v", err)
+	}
 
-		body, err := io.ReadAll(fh)
+	for rec, err := range iter.Iterate(ctx, *uri) {
 
 		if err != nil {
-			return fmt.Errorf("Failed to read data for %s, %w", path, err)
+			log.Fatalf("Iterator reported an error, %v", err)
+		}
+
+		defer rec.Body.Close()
+
+		if filepath.Ext(rec.Path) != ".geojson" {
+			continue
+		}
+
+		body, err := io.ReadAll(rec.Body)
+
+		if err != nil {
+			log.Fatalf("Failed to read data for %s, %v", rec.Path, err)
 		}
 
 		src_rsp := gjson.GetBytes(body, "properties.src:geom")
 
 		if !src_rsp.Exists() {
-			return fmt.Errorf("%s is missing src:geom", path)
+			log.Fatalf("%s is missing src:geom", rec.Path)
 		}
 
 		src := src_rsp.String()
@@ -123,14 +135,14 @@ func main() {
 		label, err := maps.DeriveLabel(body)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive year label for %s, %w", path, err)
+			log.Fatalf("Failed to derive year label for %s, %v", rec.Path, err)
 		}
 
 		if len(exclude) > 0 {
 
 			for _, e := range exclude {
 				if label == e {
-					return nil
+					continue
 				}
 			}
 		}
@@ -140,14 +152,14 @@ func main() {
 		incept_rsp := gjson.GetBytes(body, "properties.date:inception_upper")
 
 		if !incept_rsp.Exists() {
-			return fmt.Errorf("%s is missing date:inception_upper", path)
+			log.Fatalf("%s is missing date:inception_upper", rec.Path)
 		}
 
 		incept_str := incept_rsp.String()
 		incept_t, err := time.Parse("2006-01-02", incept_str)
 
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		year := incept_t.Year()
@@ -157,7 +169,7 @@ func main() {
 		min_zoom, max_zoom, err := maps.DeriveZoomLevels(body)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive zoom levels for %s, %w", path, err)
+			log.Fatalf("Failed to derive zoom levels for %s, %v", rec.Path, err)
 		}
 
 		url := fmt.Sprintf("https://static.sfomuseum.org/aerial/%s/{z}/{x}/{-y}.png", label)
@@ -174,7 +186,6 @@ func main() {
 		}
 
 		map_ch <- m
-		return nil
 	}
 
 	go func() {
@@ -198,18 +209,6 @@ func main() {
 		}
 
 	}()
-
-	iter, err := iterator.NewIterator(ctx, *mode, cb)
-
-	if err != nil {
-		log.Fatalf("Failed to create new iterator, %v", err)
-	}
-
-	err = iter.IterateURIs(ctx, *uri)
-
-	if err != nil {
-		log.Fatalf("Failed to iterate '%s', %v", *uri, err)
-	}
 
 	done_ch <- true
 
