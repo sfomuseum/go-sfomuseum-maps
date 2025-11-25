@@ -1,6 +1,6 @@
 GOMOD=$(shell test -f "go.work" && echo "readonly" || echo "vendor")
 
-ITERATOR_URI=git://
+ITERATOR_URI=git:///tmp?exclude=properties.edtf:deprecated=.*
 ITERATOR_SOURCE=https://github.com/sfomuseum-data/sfomuseum-data-maps.git
 
 refresh:
@@ -10,8 +10,8 @@ refresh:
 
 refresh-local:
 	@make cli
-	@make catalog.js ITERATOR_URI=repo:// ITERATOR_SOURCE=/usr/local/data/sfomuseum-data-maps
-	@make tile_connections  ITERATOR_URI=repo:// ITERATOR_SOURCE=/usr/local/data/sfomuseum-data-maps
+	@make catalog.js ITERATOR_URI=repo://?exclude=properties.edtf:deprecated=.* ITERATOR_SOURCE=/usr/local/data/sfomuseum-data-maps
+	@make tile_connections  ITERATOR_URI=repo://?exclude=properties.edtf:deprecated=.* ITERATOR_SOURCE=/usr/local/data/sfomuseum-data-maps
 
 cli:
 	go build -mod $(GOMOD) -ldflags="-s -w" -o bin/catalog_js cmd/catalog_js/main.go

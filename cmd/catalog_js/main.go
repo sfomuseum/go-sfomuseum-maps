@@ -49,7 +49,7 @@ type TemplateVars struct {
 
 func main() {
 
-	iterator_uri := flag.String("iterator-uri", "git://", "A valid whosonfirst/go-whosonfirst-iterate-git/v3.Iterator URI.")
+	iterator_uri := flag.String("iterator-uri", "git:///tmp?exclude=properties.edtf:deprecated=.*", "A valid whosonfirst/go-whosonfirst-iterate-git/v3.Iterator URI.")
 	iterator_source := flag.String("iterator-source", "https://github.com/sfomuseum-data/sfomuseum-data-maps.git", "A valid whosonfirst/go-whosonfirst-iterate-git/v3.Iterator source.")
 
 	var exclude multi.MultiString
