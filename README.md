@@ -2,6 +2,10 @@
 
 Tools for working with maps defined in the sfomuseum-data/sfomuseum-data-maps repository.
 
+## Deprecation Notice
+
+This package has been deprecated. Please use [sfomuseum/go-sfomuseum/maps](https://github.com/sfomuseum/go-sfomuseum) instead.
+
 ## Important
 
 Work in progress. Documentation is incomplete at this time.
